@@ -2,6 +2,7 @@ import socket
 from _thread import *
 import sys
 import random
+import json
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server = "localhost"
@@ -44,6 +45,10 @@ def threaded_client(conn, addr):
                     conn.send(str.encode(p))
                 elif reply[0].split(":")[1] == "get_all":
                     conn.send(str.encode(str(players)))
+                elif reply[0].split(":")[1] == "get_map":
+                    gameMap = str(json.load(open("server/map.json")))
+                    print(gameMap)
+                    conn.send(str.encode(gameMap))
         except Exception as e:
             print(e)
             break
