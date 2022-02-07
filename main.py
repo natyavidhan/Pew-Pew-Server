@@ -12,13 +12,29 @@ try:
     s.bind((server, port))
 except socket.error as e:
     print(str(e))
+mappath = "server/map.json"
 
+mapData = []
+map_ = json.load(open(mappath))
+x, y = 0, 0
+for i in map_:
+    for k in i:
+        if k == 1:
+            mapData.append([x, y])
+        x += 32
+    x = 0
+    y += 32
 
 s.listen(10)
 print("Waiting for a connection")
 
 players = {}
 
+def movePlayer(x,y) -> bool:
+    for mapx, mapy in mapData:
+        if x in range(mapx-16, mapx + 32+16) and y in range(mapy-16, mapy + 32+16):
+            return False
+    return True
 
 def threaded_client(conn, addr):
     global players
@@ -40,15 +56,22 @@ def threaded_client(conn, addr):
 
                 elif reply[0].split(":")[1] == "update":
                     edit = reply[1].split(":")
-                    p = f"name:{addr}||id:{addr}||x:{edit[0]}||y:{edit[1]}||health:{edit[2]}||rotation:{edit[3]}"
-                    players[str(addr)] = p
-                    conn.send(str.encode(p))
+                    shouldMove = movePlayer(int(edit[0]), int(edit[1]))
+                    if shouldMove:
+                        p = f"name:{addr}||id:{addr}||x:{edit[0]}||y:{edit[1]}||health:{edit[2]}||rotation:{edit[3]}"
+                        players[str(addr)] = p
+                        conn.send(str.encode(p))
+                    else:
+                        conn.send(str.encode(players[str(addr)]))
+                    
                 elif reply[0].split(":")[1] == "get_all":
                     conn.send(str.encode(str(players)))
+                    
                 elif reply[0].split(":")[1] == "get_map":
-                    gameMap = str(json.load(open("server/map.json")))
+                    gameMap = str(json.load(open(mappath)))
                     print(gameMap)
                     conn.send(str.encode(gameMap))
+                    
         except Exception as e:
             print(e)
             break
