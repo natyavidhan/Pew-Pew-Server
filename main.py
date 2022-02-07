@@ -38,11 +38,12 @@ def threaded_client(conn, addr):
                     conn.send(str.encode(players[str(addr)]))
 
                 elif reply[0].split(":")[1] == "update":
-                    players[str(addr)] = reply[1]
-
+                    edit = reply[1].split(":")
+                    p = f"name:{addr}||id:{addr}||x:{edit[0]}||y:{edit[1]}||health:{edit[2]}||rotation:{edit[3]}"
+                    players[str(addr)] = p
+                    conn.send(str.encode(p))
                 elif reply[0].split(":")[1] == "get_all":
                     conn.send(str.encode(str(players)))
-            # conn.sendall(str.encode(str(reply)))
         except Exception as e:
             print(e)
             break
