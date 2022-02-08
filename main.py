@@ -30,11 +30,20 @@ print("Waiting for a connection")
 
 players = {}
 
-def movePlayer(x,y) -> bool:
+
+def movePlayer(x, y) -> bool:
     for mapx, mapy in mapData:
-        if x in range(mapx-16, mapx + 32+16) and y in range(mapy-16, mapy + 32+16):
+        if (
+            x in range(mapx - 16, mapx + 32 + 16)
+            and y in range(mapy - 16, mapy + 32 + 16)
+            or x > 800 - 16
+            or y > 600 + 16
+            or x < 0 + 16
+            or y < 0 + 16
+        ):
             return False
     return True
+
 
 def threaded_client(conn, addr):
     global players
@@ -63,15 +72,15 @@ def threaded_client(conn, addr):
                         conn.send(str.encode(p))
                     else:
                         conn.send(str.encode(players[str(addr)]))
-                    
+
                 elif reply[0].split(":")[1] == "get_all":
                     conn.send(str.encode(str(players)))
-                    
+
                 elif reply[0].split(":")[1] == "get_map":
                     gameMap = str(json.load(open(mappath)))
                     print(gameMap)
                     conn.send(str.encode(gameMap))
-                    
+
         except Exception as e:
             print(e)
             break
