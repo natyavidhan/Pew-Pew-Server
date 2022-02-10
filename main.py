@@ -34,6 +34,13 @@ bullets = {}
 
 
 def movePlayer(x, y) -> bool:
+    '''
+    Check if the player is in the map
+    
+    :param x: The x coordinate of the player
+    :param y: The y coordinate of the player
+    :return: False
+    '''
     for mapx, mapy in mapData:
         if (
             x in range(mapx - 16, mapx + 32 + 16)
