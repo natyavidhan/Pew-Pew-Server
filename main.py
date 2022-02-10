@@ -4,6 +4,7 @@ import sys
 import random
 import json
 import time
+
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server = "localhost"
 port = 5555
@@ -30,6 +31,7 @@ print("Waiting for a connection")
 
 players = {}
 bullets = {}
+
 
 def movePlayer(x, y) -> bool:
     for mapx, mapy in mapData:
@@ -80,10 +82,13 @@ def threaded_client(conn, addr):
                     gameMap = str(json.load(open(mappath)))
                     print(gameMap)
                     conn.send(str.encode(gameMap))
-                
+
                 elif reply[0].split(":")[1] == "shoot":
                     data = reply[1].split(":")
-                    x, y = players[str(addr)].split("||")[2].split(":")[1], players[str(addr)].split("||")[3].split(":")[1]
+                    x, y = (
+                        players[str(addr)].split("||")[2].split(":")[1],
+                        players[str(addr)].split("||")[3].split(":")[1],
+                    )
                     if str(addr) in bullets:
                         if len(bullets[str(addr)]) < 10:
                             bullets[str(addr)].append(f"name:{addr}||x:{x}||y:{y}")
@@ -91,7 +96,7 @@ def threaded_client(conn, addr):
                         bullets[str(addr)] = [f"name:{addr}||x:{x}||y:{y}"]
                     print(bullets)
                     conn.send(str.encode(str(bullets[str(addr)])))
-                
+
                 elif reply[0].split(":")[1] == "get_bullets":
                     conn.send(str.encode(str(bullets)))
         except Exception as e:
@@ -103,6 +108,7 @@ def threaded_client(conn, addr):
     players.pop(str(addr))
     if str(addr) in bullets:
         bullets.pop(str(addr))
+
 
 while True:
     conn, addr = s.accept()
