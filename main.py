@@ -12,7 +12,7 @@ server_ip = socket.gethostbyname(server)
 try:
     s.bind((server, port))
 except socket.error as e:
-    print(str(e))
+    print(e)
 mappath = "server/map.json"
 
 mapData = []
@@ -41,17 +41,17 @@ def movePlayer(x, y) -> bool:
     :param y: The y coordinate of the player
     :return: False
     '''
-    for mapx, mapy in mapData:
-        if (
+    return not any(
+        (
             x in range(mapx - 16, mapx + 32 + 16)
             and y in range(mapy - 16, mapy + 32 + 16)
             or x > 800 - 16
             or y > 600 + 16
             or x < 0 + 16
             or y < 0 + 16
-        ):
-            return False
-    return True
+        )
+        for mapx, mapy in mapData
+    )
 
 
 def threaded_client(conn, addr):
@@ -74,8 +74,7 @@ def threaded_client(conn, addr):
 
                 elif reply[0].split(":")[1] == "update":
                     edit = reply[1].split(":")
-                    shouldMove = movePlayer(int(edit[0]), int(edit[1]))
-                    if shouldMove:
+                    if shouldMove := movePlayer(int(edit[0]), int(edit[1])):
                         p = f"name:{addr}||id:{addr}||x:{edit[0]}||y:{edit[1]}||health:{edit[2]}||rotation:{edit[3]}"
                         players[str(addr)] = p
                         conn.send(str.encode(p))
