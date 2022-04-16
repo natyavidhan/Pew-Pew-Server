@@ -33,18 +33,18 @@ players = {}
 bullets = {}
 
 
-def movePlayer(x, y) -> bool:
-    for mapx, mapy in wallData:
-        if (
-            x in range(mapx - 16, mapx + 32 + 16)
-            and y in range(mapy - 16, mapy + 32 + 16)
-            or x > 800 - 16
-            or y > 600 + 16
-            or x < 0 + 16
-            or y < 0 + 16
-        ):
-            return False
-    return True
+# def movePlayer(x, y) -> bool:
+#     for mapx, mapy in wallData:
+#         if (
+#             x in range(mapx - 16, mapx + 32 + 16)
+#             and y in range(mapy - 16, mapy + 32 + 16)
+#             or x > 800 - 16
+#             or y > 600 + 16
+#             or x < 0 + 16
+#             or y < 0 + 16
+#         ):
+#             return False
+#     return True
 
 
 def threaded_client(conn, addr):
@@ -66,9 +66,8 @@ def threaded_client(conn, addr):
                 reply = json.loads(reply)
                 if reply["type"] == "update":
                     x, y = reply["payload"]["pos"]
-                    if movePlayer(x, y):
-                        players[str(addr)]["pos"] = [x, y]
-                        players[str(addr)]["rotation"] = reply["payload"]["rotation"]
+                    players[str(addr)]["pos"] = [x, y]
+                    players[str(addr)]["rotation"] = reply["payload"]["rotation"]
                     conn.send(str.encode(json.dumps(players[str(addr)])))
                 elif reply["type"] == "get":
                     if reply["payload"] == "all":
