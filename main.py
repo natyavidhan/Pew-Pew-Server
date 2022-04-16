@@ -81,6 +81,7 @@ def threaded_client(conn, addr):
                         players[str(addr)]["pos"] = [x, y]
                         players[str(addr)]["rotation"] = reply["payload"]["rotation"]
                     conn.send(str.encode(json.dumps(players[str(addr)])))
+
                 elif reply["type"] == "get":
                     if reply["payload"] == "all":
                         conn.send(str.encode(json.dumps(players)))
@@ -88,6 +89,26 @@ def threaded_client(conn, addr):
                         conn.send(str.encode(json.dumps(players[str(addr)])))
                     elif reply["payload"] == "map":
                         conn.send(str.encode(json.dumps(mapData)))
+                        
+                elif reply["type"] == "move":
+                    direction = reply["payload"]
+                    x, y = players[str(addr)]["pos"]
+                    if direction == "up":
+                        y -= 5
+                    elif direction == "down":
+                        y += 5
+                    elif direction == "left":
+                        x -= 5
+                    elif direction == "right":
+                        x += 5
+                    elif direction == "rot":
+                        players[str(addr)]["rotation"] = reply["deg"]
+                    if movePlayer(x, y):
+                        players[str(addr)]["pos"] = [x, y]
+                    conn.send(str.encode(json.dumps(players[str(addr)])))
+
+                else:
+                    print(f"Unknown command: {reply}")
 
         except Exception as e:
             print(e)
