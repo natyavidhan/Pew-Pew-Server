@@ -50,10 +50,13 @@ bullets = {}
 def threaded_client(conn, addr):
     global players
     players[str(addr)] = {
-        "name": addr, "id": addr, "pos": [random.randint(0, 800), random.randint(0, 600)],
-        "health": 100, "rotation": 0
-        }
-    
+        "name": addr,
+        "id": addr,
+        "pos": [random.randint(0, 800), random.randint(0, 600)],
+        "health": 100,
+        "rotation": 0,
+    }
+
     conn.send(str.encode(json.dumps(players[str(addr)])))
     while True:
         try:
@@ -76,7 +79,7 @@ def threaded_client(conn, addr):
                         conn.send(str.encode(json.dumps(players[str(addr)])))
                     elif reply["payload"] == "map":
                         conn.send(str.encode(json.dumps(mapData)))
-                        
+
         except Exception as e:
             print(e)
             break
@@ -93,6 +96,7 @@ def main():
         conn, addr = s.accept()
         print("Connected to: ", addr)
         start_new_thread(threaded_client, (conn, addr))
+
 
 start_new_thread(main, ())
 while True:
