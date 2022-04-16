@@ -34,13 +34,6 @@ bullets = {}
 
 
 def movePlayer(x, y) -> bool:
-    '''
-    Check if the player is in the map
-    
-    :param x: The x coordinate of the player
-    :param y: The y coordinate of the player
-    :return: False
-    '''
     for mapx, mapy in mapData:
         if (
             x in range(mapx - 16, mapx + 32 + 16)
@@ -56,10 +49,12 @@ def movePlayer(x, y) -> bool:
 
 def threaded_client(conn, addr):
     global players
-    players[
-        str(addr)
-    ] = f"name:{addr}||id:{addr}||x:{random.randint(0, 800)}||y:{random.randint(0, 600)}||health:100||rotation:0"
-    conn.send(str.encode(players[str(addr)]))
+    players[str(addr)] = {
+        "name": addr, "id": addr, "pos": [random.randint(0, 800), random.randint(0, 600)],
+        "health": 100, "rotation": 0
+        }
+    
+    conn.send(str.encode(json.dumps(players[str(addr)])))
     while True:
         try:
             data = conn.recv(2048)
@@ -68,27 +63,21 @@ def threaded_client(conn, addr):
                 conn.send(str.encode("Goodbye"))
                 break
             else:
-                reply = reply.split("||")
-                if reply[0].split(":")[1] == "get":
-                    conn.send(str.encode(players[str(addr)]))
-
-                elif reply[0].split(":")[1] == "update":
-                    edit = reply[1].split(":")
-                    shouldMove = movePlayer(int(edit[0]), int(edit[1]))
-                    if shouldMove:
-                        p = f"name:{addr}||id:{addr}||x:{edit[0]}||y:{edit[1]}||health:{edit[2]}||rotation:{edit[3]}"
-                        players[str(addr)] = p
-                        conn.send(str.encode(p))
-                    else:
-                        conn.send(str.encode(players[str(addr)]))
-
-                elif reply[0].split(":")[1] == "get_all":
-                    conn.send(str.encode(str(players)))
-
-                elif reply[0].split(":")[1] == "get_map":
-                    gameMap = str(json.load(open(mappath)))
-                    conn.send(str.encode(gameMap))
-
+                reply = json.loads(reply)
+                if reply["type"] == "update":
+                    x, y = reply["payload"]["pos"]
+                    if movePlayer(x, y):
+                        players[str(addr)]["pos"] = [x, y]
+                        players[str(addr)]["rotation"] = reply["payload"]["rotation"]
+                    conn.send(str.encode(json.dumps(players[str(addr)])))
+                elif reply["type"] == "get":
+                    if reply["payload"] == "all":
+                        conn.send(str.encode(json.dumps(players)))
+                    elif reply["payload"] == "self":
+                        conn.send(str.encode(json.dumps(players[str(addr)])))
+                    elif reply["payload"] == "map":
+                        conn.send(str.encode(json.dumps(mapData)))
+                        
         except Exception as e:
             print(e)
             break
