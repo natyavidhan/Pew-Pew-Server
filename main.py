@@ -15,7 +15,16 @@ except socket.error as e:
     print(str(e))
 mappath = "server/map.json"
 
+wallData = []
 mapData = json.load(open(mappath))
+x, y = 0, 0
+for i in mapData:
+    for k in i:
+        if k == 1:
+            wallData.append([x, y])
+        x += 32
+    x = 0
+    y += 32
 
 s.listen(10)
 print("Waiting for a connection")
@@ -25,7 +34,7 @@ bullets = {}
 
 
 def movePlayer(x, y) -> bool:
-    for mapx, mapy in mapData:
+    for mapx, mapy in wallData:
         if (
             x in range(mapx - 16, mapx + 32 + 16)
             and y in range(mapy - 16, mapy + 32 + 16)
