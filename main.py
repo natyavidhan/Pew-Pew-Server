@@ -15,16 +15,7 @@ except socket.error as e:
     print(str(e))
 mappath = "server/map.json"
 
-mapData = []
-map_ = json.load(open(mappath))
-x, y = 0, 0
-for i in map_:
-    for k in i:
-        if k == 1:
-            mapData.append([x, y])
-        x += 32
-    x = 0
-    y += 32
+mapData = json.load(open(mappath))
 
 s.listen(10)
 print("Waiting for a connection")
