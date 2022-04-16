@@ -87,25 +87,8 @@ def threaded_client(conn, addr):
 
                 elif reply[0].split(":")[1] == "get_map":
                     gameMap = str(json.load(open(mappath)))
-                    print(gameMap)
                     conn.send(str.encode(gameMap))
 
-                elif reply[0].split(":")[1] == "shoot":
-                    data = reply[1].split(":")
-                    x, y = (
-                        players[str(addr)].split("||")[2].split(":")[1],
-                        players[str(addr)].split("||")[3].split(":")[1],
-                    )
-                    if str(addr) in bullets:
-                        if len(bullets[str(addr)]) < 10:
-                            bullets[str(addr)].append(f"name:{addr}||x:{x}||y:{y}")
-                    else:
-                        bullets[str(addr)] = [f"name:{addr}||x:{x}||y:{y}"]
-                    print(bullets)
-                    conn.send(str.encode(str(bullets[str(addr)])))
-
-                elif reply[0].split(":")[1] == "get_bullets":
-                    conn.send(str.encode(str(bullets)))
         except Exception as e:
             print(e)
             break
@@ -117,7 +100,12 @@ def threaded_client(conn, addr):
         bullets.pop(str(addr))
 
 
+def main():
+    while True:
+        conn, addr = s.accept()
+        print("Connected to: ", addr)
+        start_new_thread(threaded_client, (conn, addr))
+
+start_new_thread(main, ())
 while True:
-    conn, addr = s.accept()
-    print("Connected to: ", addr)
-    start_new_thread(threaded_client, (conn, addr))
+    pass
